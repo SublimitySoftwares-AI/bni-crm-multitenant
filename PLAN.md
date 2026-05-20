@@ -1,81 +1,156 @@
-# Plan · Multitenant BNI CRM
+# BNI CRM Multitenancy - Project Plan
 
-## Brief
-Multitenant BNI CRM with tenant registration, superadmin management, and core BNI exhibition lead/event features, built on Laravel for consistency with existing Sublimity projects.
+## Overview
+A multitenant CRM system for BNI (Business Network International) chapters, built with Laravel, Spatie Multitenancy, Livewire, and Tailwind CSS. Each BNI chapter operates as an independent tenant with isolated data.
 
-## Stack
-- Laravel 10.x (PHP 8.2+)
-- MySQL 8.0 (tenant-aware database structure)
-- Spatie Laravel Multitenancy (v4) for tenant isolation
-- Livewire 3 (admin panels, interactive components)
-- Tailwind CSS 3 (UI consistency with existing BNI exhibition CRM)
-- Laravel Fortify (authentication, password reset)
-- ChromePHP (testing, optional)
+## Technology Stack
+- **Framework**: Laravel 12.x
+- **PHP Version**: 8.2+
+- **Multitenancy**: Spatie Laravel Multitenancy v4.x
+- **Authentication**: Laravel Fortify
+- **RBAC**: Spatie Laravel Permission
+- **Frontend**: Livewire 3.x + Tailwind CSS 3.x
+- **Database**: MySQL 8.0+ (per-tenant databases)
 
-## Scope
-**Functionality**
-- Superadmin dashboard: manage all tenants, system settings, global stats
-- Tenant registration: public form for new tenant signups, pending superadmin approval
-- Role-based access control: superadmin, tenant admin, tenant staff
-- Tenant data isolation: full separation of leads, exhibitions, users per tenant
-- Core BNI CRM features (migrated from existing bni-exhibition):
-  - Lead management (add, edit, delete, filter, business card scanning)
-  - Exhibition tracking (create events, manage attendees, check-ins)
-  - Reporting (lead counts, exhibition performance per tenant)
-- Tenant-specific dashboards: lead stats, exhibition status, staff activity
-- Secure authentication: separate superadmin and tenant login flows
+## Features
 
-**Visuals**
-- Match existing BNI exhibition CRM UI/UX conventions (branding, color scheme, layout)
-- Superadmin panel: sidebar nav, tenant list table, system health widgets
-- Tenant dashboard: lead summary cards, exhibition calendar, quick action buttons
-- Responsive design for desktop and tablet use
+### 1. Superadmin Panel (Issue #2, #3)
+- Tenant creation, management, activation/suspension
+- Cross-tenant user management
+- Dashboard with system-wide statistics
 
-## Out of Scope
-- Mobile native app
-- Payment integration for tenant subscription billing
-- Advanced ML/analytics features
-- Multi-language/internationalization support
-- Public-facing exhibition registration portals
+### 2. Authentication (Issue #9)
+- Laravel Fortify for authentication
+- Superadmin login → separate admin panel
+- Tenant user login → tenant-specific dashboard
+- Email verification, password reset
 
-## Constraints
-- Must use Laravel (consistent with existing Sublimity Laravel projects)
-- Full tenant data isolation: no cross-tenant data leaks in queries or storage
-- Superadmin credentials stored in `.env` (never hard-coded)
-- Follow existing BNI exhibition CRM UI/UX patterns for familiarity
-- All new code must include PHPUnit tests for critical paths
+### 3. RBAC (Issue #4)
+- Roles: superadmin, tenant_admin, member
+- Permissions: manage_tenants, manage_leads, manage_exhibitions, etc.
+- Role assignment during tenant/user creation
 
-## Definition of Done
-All GitHub issues in the repo are closed, superadmin can create a tenant, tenant admin can register, and core BNI lead/exhibition features work in isolated tenant context with 0 cross-tenant data leaks.
+### 4. Lead Management (Issue #5)
+- CRUD operations for leads
+- Source tracking (exhibition, referral, card_scan, etc.)
+- Search and filter capabilities
+- Tenant-isolated data
+
+### 5. Exhibition Management (Issue #6)
+- Exhibition CRUD with date ranges
+- Attendee management with check-in functionality
+- Tenant-isolated exhibitions
+
+### 6. Data Isolation (Issue #7)
+- Spatie Multitenancy automatic tenant switching
+- Tenant connection trait on all tenant models
+- Tests verifying data never leaks between tenants
+
+## Architecture
+
+### Database Strategy
+- **Landlord database**: tenants, users, roles, permissions (system-wide)
+- **Per-tenant databases**: leads, exhibitions, attendees, etc.
+
+### Middleware Stack
+1. `EnsureUserIsAuthenticated` - Fortify auth check
+2. `NeedsTenant` - Spatie tenant resolution
+3. `EnsureTenantIsActive` - Verify tenant is not suspended
+4. `EnsureUserIsSuperadmin` / `EnsureUserIsTenantAdmin` - Role checks
+
+### Route Groups
+- `/superadmin/*` - Superadmin-only routes
+- `/tenant/*` - Tenant routes (requires tenant context)
+- `/` - Public/guest routes
+
+## Directory Structure
+```
+app/
+├── Actions/
+│   ├── Fortify/           # Fortify action classes
+│   └── Livewire/          # Livewire component actions
+├── Http/
+│   ├── Controllers/
+│   │   ├── Auth/          # Authentication controllers
+│   │   ├── Superadmin/    # Superadmin controllers
+│   │   └── Tenant/        # Tenant controllers
+│   └── Middleware/
+├── Models/
+│   ├── Lead.php           # Uses UsesTenantConnection
+│   ├── Exhibition.php     # Uses UsesTenantConnection
+│   ├── Tenant.php         # Spatie tenant model
+│   └── User.php           # Extended with roles
+├── Providers/
+│   ├── FortifyServiceProvider.php
+│   └── MultitenancyServiceProvider.php
+config/
+├── multitenancy.php       # Spatie config
+├── fortify.php            # Fortify config
+└── auth.php               # Auth guards
+database/migrations/
+├── *_create_tenants_tables.php
+├── *_create_leads_table.php
+└── *_create_exhibitions_tables.php
+resources/views/
+├── auth/                  # Login, register, etc.
+├── layouts/               # App, guest layouts
+├── superadmin/            # Superadmin views
+└── tenant/               # Tenant views (leads, exhibitions)
+```
 
 ## Acceptance Criteria
-- Superadmin can log in to dedicated `/superadmin` panel with separate credentials
-- Superadmin can create, edit, suspend, delete tenants from dashboard
-- Public `/register` form allows new tenants to sign up, with status "pending" until superadmin approval
-- Tenant admin can log in to tenant-specific `/dashboard` after approval
-- Leads created by Tenant A are not visible to Tenant B (verified with 2 test tenants)
-- Core lead management (add, edit, delete, filter) works within tenant context
-- Exhibition tracking (create, manage attendees, check-ins) works within tenant context
-- All PHPUnit tests pass (unit, feature, multitenancy isolation tests)
-- 0 JavaScript errors on all dashboards (verified via browser console)
 
-## Verification
-- Run `php artisan test` to confirm all tests pass
-- Manually verify superadmin can create a test tenant, tenant admin can register
-- Create 2 tenants, add a lead in Tenant A, confirm it does not appear in Tenant B dashboard
-- Run `browser_console` on all dashboards to confirm 0 JS errors
-- Check tenant database isolation: verify each tenant has separate data tables (or prefixed tables per Spatie config)
+### Superadmin
+- [ ] Can create new tenants with admin user
+- [ ] Can view all tenants with status
+- [ ] Can activate/suspend tenants
+- [ ] Dashboard shows system-wide stats
 
-## Turn Budget
-~100 turns for full implementation (lightweight setup: 15-25, medium features: 30-50, full completion: 100)
+### Authentication
+- [ ] Users can register and login
+- [ ] Superadmin users see superadmin panel
+- [ ] Tenant users see tenant dashboard
+- [ ] Password reset works
 
-## References
-- Existing BNI Exhibition CRM: https://github.com/SublimitySoftwares-AI/bni-exhibition
-- Spatie Laravel Multitenancy docs: https://spatie.be/docs/laravel-multitenancy/v4/introduction
-- Laravel Fortify docs: https://laravel.com/docs/10.x/fortify
-- Existing BNI CRM wiki: ~/wiki-aperture/ (Laravel Hostinger deployment patterns)
+### RBAC
+- [ ] Roles can be assigned to users
+- [ ] Permissions protect routes
+- [ ] Superadmin can manage tenant users
 
-## Risks / Open Questions
-- Confirm if tenant isolation should use separate databases per tenant or prefixed tables in single DB (Spatie supports both)
-- Confirm if existing BNI exhibition lead/exhibition code can be directly ported or needs refactoring for multitenancy
-- Confirm superadmin login should be separate route or role-based within same login flow
+### Leads
+- [ ] Tenant users can CRUD their leads
+- [ ] Leads are isolated per tenant
+- [ ] Search and filter work
+- [ ] Source tracking functional
+
+### Exhibitions
+- [ ] Tenant users can CRUD exhibitions
+- [ ] Attendee management works
+- [ ] Check-in functionality works
+- [ ] Data isolated per tenant
+
+### Testing
+- [ ] Unit tests for models
+- [ ] Feature tests for authentication
+- [ ] Multitenancy isolation tests
+- [ ] Integration tests for CRUD operations
+
+## GitHub Issues
+1. Set up Laravel 10.x with Spatie Laravel Multitenancy ✓
+2. Build Superadmin dashboard and tenant management
+3. Implement tenant registration flow
+4. Set up role-based access control (RBAC)
+5. Port BNI exhibition lead management to multitenant
+6. Port BNI exhibition exhibition tracking to multitenant
+7. Implement tenant data isolation verification tests
+8. Build tenant-specific dashboards
+9. Set up Laravel Fortify authentication (superadmin + tenants)
+10. Write PHPUnit tests for all critical paths
+
+## Future Enhancements
+- Card scanning with OCR
+- Email integration
+- Event/meeting management
+- Referral tracking
+- Analytics dashboard
+- API for mobile apps
