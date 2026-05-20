@@ -7,7 +7,7 @@ use Illuminate\Support\ServiceProvider;
 use Spatie\Multitenancy\Models\Concerns\UsesTenantModel;
 use Spatie\Multitenancy\MultitenancyServiceProvider;
 
-class MultitenancyServiceProvider extends ServiceProvider
+class TenantServiceProvider extends ServiceProvider
 {
     use UsesTenantModel;
 
@@ -16,7 +16,6 @@ class MultitenancyServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Register the MultitenancyServiceProvider
         $this->app->register(MultitenancyServiceProvider::class);
     }
 
@@ -25,7 +24,6 @@ class MultitenancyServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Set the tenant model class
         $this->app->singleton(
             \Spatie\Multitenancy\Models\Concerns\UsesTenantModel::tenantModelClassKey(),
             fn () => Tenant::class
