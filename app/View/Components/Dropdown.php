@@ -11,7 +11,7 @@ class Dropdown extends Component
      */
     public function __construct(
         public string $align = 'right',
-        public int $width = '48'
+        public int $width = 48
     ) {}
 
     /**
