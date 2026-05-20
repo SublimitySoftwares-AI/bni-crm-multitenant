@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Superadmin;
 use App\Http\Controllers\Controller;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Models\Lead;
+use App\Models\Exhibition;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -19,10 +21,13 @@ class DashboardController extends Controller
             'active_tenants' => Tenant::where('is_active', true)->count(),
             'pending_tenants' => Tenant::where('is_active', false)->count(),
             'total_users' => User::count(),
+            'total_leads' => Lead::count(),
+            'total_exhibitions' => Exhibition::count(),
         ];
 
         $recentTenants = Tenant::latest()->take(5)->get();
+        $recentUsers = User::latest()->take(5)->get();
 
-        return view('superadmin.dashboard', compact('stats', 'recentTenants'));
+        return view('superadmin.dashboard', compact('stats', 'recentTenants', 'recentUsers'));
     }
 }
