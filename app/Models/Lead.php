@@ -11,6 +11,13 @@ class Lead extends Model
 {
     use HasFactory, UsesTenantConnection;
 
+    // Status constants
+    public const STATUS_NEW = 'new';
+    public const STATUS_CONTACTED = 'contacted';
+    public const STATUS_QUALIFIED = 'qualified';
+    public const STATUS_WON = 'won';
+    public const STATUS_LOST = 'lost';
+
     protected $fillable = [
         'name',
         'email',
@@ -19,6 +26,7 @@ class Lead extends Model
         'designation',
         'source',
         'notes',
+        'status',
         'created_by',
     ];
 
@@ -33,6 +41,35 @@ class Lead extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Get all statuses with labels.
+     */
+    public static function getStatuses(): array
+    {
+        return [
+            self::STATUS_NEW => 'New',
+            self::STATUS_CONTACTED => 'Contacted',
+            self::STATUS_QUALIFIED => 'Qualified',
+            self::STATUS_WON => 'Won',
+            self::STATUS_LOST => 'Lost',
+        ];
+    }
+
+    /**
+     * Get status badge color.
+     */
+    public function getStatusColorAttribute(): string
+    {
+        return match($this->status) {
+            self::STATUS_NEW => 'blue',
+            self::STATUS_CONTACTED => 'yellow',
+            self::STATUS_QUALIFIED => 'green',
+            self::STATUS_WON => 'emerald',
+            self::STATUS_LOST => 'red',
+            default => 'gray',
+        };
     }
 
     /**

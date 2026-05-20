@@ -45,6 +45,15 @@
                 </div>
 
                 <div class="col-span-2">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Status</label>
+                    <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        @foreach($lead->getStatuses() as $key => $label)
+                            <option value="{{ $key }}" {{ old('status', $lead->status) == $key ? 'selected' : '' }}>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="col-span-2">
                     <label class="block text-gray-700 text-sm font-bold mb-2">Notes</label>
                     <textarea name="notes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">{{ old('notes', $lead->notes) }}</textarea>
                 </div>

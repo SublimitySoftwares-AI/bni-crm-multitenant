@@ -29,9 +29,14 @@ class LeadController extends Controller
             $query->where('source', $request->source);
         }
 
-        $leads = $query->latest()->paginate(20)->withQueryString();
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
 
-        return view('tenant.leads.index', compact('leads'));
+        $leads = $query->latest()->paginate(20)->withQueryString();
+        $statuses = Lead::getStatuses();
+
+        return view('tenant.leads.index', compact('leads', 'statuses'));
     }
 
     /**
@@ -39,7 +44,8 @@ class LeadController extends Controller
      */
     public function create()
     {
-        return view('tenant.leads.create');
+        $statuses = Lead::getStatuses();
+        return view('tenant.leads.create', compact('statuses'));
     }
 
     /**
@@ -54,8 +60,12 @@ class LeadController extends Controller
             'company' => ['nullable', 'string', 'max:255'],
             'designation' => ['nullable', 'string', 'max:255'],
             'source' => ['nullable', 'string', 'max:100'],
+            'status' => ['nullable', 'string', 'in:new,contacted,qualified,won,lost'],
             'notes' => ['nullable', 'string'],
         ]);
+
+        $validated['created_by'] = auth()->id();
+        $validated['status'] = $validated['status'] ?? 'new';
 
         Lead::create($validated);
 
@@ -76,7 +86,8 @@ class LeadController extends Controller
      */
     public function edit(Lead $lead)
     {
-        return view('tenant.leads.edit', compact('lead'));
+        $statuses = Lead::getStatuses();
+        return view('tenant.leads.edit', compact('lead', 'statuses'));
     }
 
     /**
@@ -91,6 +102,7 @@ class LeadController extends Controller
             'company' => ['nullable', 'string', 'max:255'],
             'designation' => ['nullable', 'string', 'max:255'],
             'source' => ['nullable', 'string', 'max:100'],
+            'status' => ['nullable', 'string', 'in:new,contacted,qualified,won,lost'],
             'notes' => ['nullable', 'string'],
         ]);
 
@@ -109,5 +121,19 @@ class LeadController extends Controller
 
         return redirect()->route('tenant.leads.index')
             ->with('success', 'Lead deleted successfully.');
+    }
+
+    /**
+     * Change lead status.
+     */
+    public function changeStatus(Request $request, Lead $lead)
+    {
+        $request->validate([
+            'status' => ['required', 'string', 'in:new,contacted,qualified,won,lost'],
+        ]);
+
+        $lead->update(['status' => $request->status]);
+
+        return back()->with('success', 'Lead status updated successfully.');
     }
 }

@@ -35,6 +35,7 @@ Route::middleware(['auth', 'verified', 'tenant'])->group(function () {
     Route::get('/leads/{lead}/edit', [\App\Http\Controllers\Tenant\LeadController::class, 'edit'])->name('tenant.leads.edit');
     Route::put('/leads/{lead}', [\App\Http\Controllers\Tenant\LeadController::class, 'update'])->name('tenant.leads.update');
     Route::delete('/leads/{lead}', [\App\Http\Controllers\Tenant\LeadController::class, 'destroy'])->name('tenant.leads.destroy');
+    Route::post('/leads/{lead}/change-status', [\App\Http\Controllers\Tenant\LeadController::class, 'changeStatus'])->name('tenant.leads.changeStatus');
     Route::get('/exhibitions', [\App\Http\Controllers\Tenant\ExhibitionController::class, 'index'])->name('tenant.exhibitions.index');
     Route::get('/exhibitions/create', [\App\Http\Controllers\Tenant\ExhibitionController::class, 'create'])->name('tenant.exhibitions.create');
     Route::post('/exhibitions', [\App\Http\Controllers\Tenant\ExhibitionController::class, 'store'])->name('tenant.exhibitions.store');

@@ -53,6 +53,7 @@ class ExhibitionController extends Controller
         ]);
 
         $validated['status'] = $validated['status'] ?? 'draft';
+        $validated['created_by'] = auth()->id();
 
         Exhibition::create($validated);
 
