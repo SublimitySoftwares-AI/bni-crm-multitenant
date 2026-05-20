@@ -6,6 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'BNI CRM') }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
 </head>
 <body class="antialiased">
     <div class="min-h-screen bg-gray-100">
@@ -25,5 +26,6 @@
             @yield('content')
         </main>
     </div>
+    @livewireScripts
 </body>
 </html>
