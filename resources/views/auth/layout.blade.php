@@ -14,7 +14,7 @@
         </div>
         
         <div class="w-full sm:max-w-md px-6 py-8 bg-white shadow-md overflow-hidden rounded-lg">
-            {{ $slot }}
+            @yield('content')
         </div>
     </div>
 </body>
