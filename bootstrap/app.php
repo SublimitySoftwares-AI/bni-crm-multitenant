@@ -22,6 +22,6 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withProviders([
         \Spatie\Multitenancy\MultitenancyServiceProvider::class,
-        \App\Providers\MultitenancyServiceProvider::class,
+        \App\Providers\TenantServiceProvider::class,
     ])
     ->create();
