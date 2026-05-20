@@ -88,9 +88,18 @@
                     <x-responsive-nav-link :href="route('superadmin.dashboard')" :active="request()->routeIs('superadmin.*')">
                         {{ __('Dashboard') }}
                     </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('tenants.index')" :active="request()->routeIs('tenants.*')">
+                        {{ __('Tenants') }}
+                    </x-responsive-nav-link>
                 @else
-                    <x-responsive-nav-link :href="route('tenant.dashboard')" :active="request()->routeIs('tenant.*')">
+                    <x-responsive-nav-link :href="route('tenant.dashboard')" :active="request()->routeIs('tenant.dashboard')">
                         {{ __('Dashboard') }}
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('tenant.leads.index')" :active="request()->routeIs('tenant.leads.*')">
+                        {{ __('Leads') }}
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('tenant.exhibitions.index')" :active="request()->routeIs('tenant.exhibitions.*')">
+                        {{ __('Exhibitions') }}
                     </x-responsive-nav-link>
                 @endif
             @endauth
